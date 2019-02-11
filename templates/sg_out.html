@@ -1,0 +1,69 @@
+<head>
+  <link href="static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link rel="shortcut icon" type="image/png" href="/static/favicon.png"/>
+  <script src="static/jquery-3.2.0.min.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>picoValue - logout</title>
+  <script>
+    var gaesu=0;
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+  <script>
+      var config = {
+          apiKey: "AIzaSyAvztTYyaBoFbbtr0IwbCN1Qi0N_yJ16fY",
+          authDomain: "unied-fd8c7.firebaseapp.com",
+          databaseURL: "https://unied-fd8c7.firebaseio.com",
+          storageBucket: "unied-fd8c7.appspot.com",
+          messagingSenderId: "446008408728"
+      };
+      firebase.initializeApp(config);
+  </script>
+</head>
+<body style="background-color:#ffffff">
+  <script src="static/js/bootstrap.min.js"></script>
+  <div class="jumbotron" style="padding:10px 0% 0px 0%;background-color:#ffffff">
+    <div class="container" id="cont">
+      <div style="clear: both">
+          <p>
+            <h2 style="color:#f535aa;float: left;padding: 10px 0px 0px 0px"><i>pico</i></h2>
+            <h1 style="color:#461b7e">Value</h1>
+          </p>
+      </div>
+      <p id="pmb">나도 몰랐던 아주 작은 가치까지</p>
+      <div style="padding:10px 0% 0px 0%" id="fig">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%" id="logout">
+          <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> 로그아웃
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+    firebase.auth().onAuthStateChanged(function(user) {
+      if(!user) {
+        location.href="lgin.html";
+      }
+      else {
+        var newContent = '<p>안녕히가세요! <i>'+user.displayName+'</i> 님! <a href="aboutuser.html"><span class="badge">돌아가기</span></a></p>';
+        var newElement = document.createElement("div");
+        newElement.id="hellouser"
+        newElement.innerHTML=newContent;
+        document.getElementById("pmb").after(newElement);
+      }
+    });
+    document.getElementById("logout").onclick=function() {
+      firebase.auth().signOut().then(function() {
+        alert("로그아웃 완료.");
+        location.href="lgin.html";
+      }, function(error) {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        if(gaesu!=0){document.getElementById("alert"+gaesu).remove();}
+        var newContent ='<div class="alert alert-danger" role="alert">'+errorCode.toUpperCase()+': '+errorMessage+'</div>'
+        var newElement = document.createElement("div");
+        newElement.id="alert"+(++gaesu);
+        newElement.innerHTML=newContent;
+        document.getElementById("fig").before(newElement);
+      });
+    }
+  </script>
+</body>

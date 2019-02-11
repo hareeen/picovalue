@@ -1,0 +1,166 @@
+<head>
+  <link href="static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link rel="shortcut icon" type="image/png" href="/static/favicon.png"/>
+  <script src="static/jquery-3.2.0.min.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="static/style.css" rel="stylesheet" media="screen">
+  <meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+  <script src="static/jquery.particleground.min.js"></script>
+  <title>picoValue - aboutuser</title>
+  <script>
+    var gaesu=0;
+    var v=false;
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+  <script>
+      var config = {
+          apiKey: "AIzaSyAvztTYyaBoFbbtr0IwbCN1Qi0N_yJ16fY",
+          authDomain: "unied-fd8c7.firebaseapp.com",
+          databaseURL: "https://unied-fd8c7.firebaseio.com",
+          storageBucket: "unied-fd8c7.appspot.com",
+          messagingSenderId: "446008408728"
+      };
+      firebase.initializeApp(config);
+      var database=firebase.database();
+  </script>
+</head>
+<body style="background-color:#000000;margin-bottom:50px">
+  <script src="static/js/bootstrap.min.js"></script>
+  <div class="body"></div>
+  <div class="jumbotron">
+    <div class="container" id="cont">
+      <h2>SETTING</h2>
+      <div style="padding:0" id="pmb">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%" id="dbprofile">
+          나의 발자취
+        </button>
+      </div>
+      <div style="padding:54px 0 0 0" id="pmb">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%" id="chat">
+          채팅
+        </button>
+      </div>
+      <form action="/aboutuser.html" method="post" style="display: none;margin-bottom:0" id="form">
+        <input style="height:0" type="hidden" id="svalue" name="svalue">
+        <div style="padding:54px 0 0 0">
+          <button type="submit" class="btn btn-lg btn-block" style="width: 100%" id="getnews">
+            추천뉴스 얻기
+          </button>
+        </div>
+      </form>
+      <div style="padding:54px 0 0 0">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%" id="findfriend">
+          친구 찾기
+        </button>
+      </div>
+      <div style="padding:104px 0% 0px 0%">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%" id="logout">
+          로그아웃
+        </button>
+      </div>
+      <div style="padding:54px 0% 0px 0%" id="cn">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%" id="changenme">
+          닉네임 변경
+        </button>
+      </div>
+      <div style="padding:54px 0% 0px 0%" id="cp">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%" id="changepwd">
+          비밀번호 변경
+        </button>
+      </div>
+      <div style="padding:104px 0% 0px 0%">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%" id="deleteuser">
+          회원탈퇴
+        </button>
+      </div>
+      <div style="padding:54px 0% 0px 0%;">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%;color:black;background-color: #fff" id="formsheet" onclick="location.href='https://goo.gl/forms/kqkJecLuIiBke79j2'">
+          <strong>설문 참여하기</strong>
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+    $('.body').particleground();
+    firebase.auth().onAuthStateChanged(function(user) {
+      if(user) {
+        var newContent = '<p>안녕하세요! <i>'+user.displayName+'</i> 님! <a href="picovalueUI.html"><span class="badge">돌아가기</span></a></p>';
+        var newElement = document.createElement("div");
+        newElement.id="hellouser";
+        newElement.innerHTML=newContent;
+        document.getElementById("pmb").before(newElement);
+        if(user.providerData[0]['providerId'] === "twitter.com") {
+            document.getElementById("cn").remove();
+            document.getElementById("cp").remove();
+        }
+        var _summ = [];
+        var _summ_cnt = 0;
+        var _keys = [];
+        var _keys_cnt = 0;
+        database.ref(firebase.auth().currentUser.uid).once('value', function(snapshot) {
+          snapshot.forEach(function(childSnapshot) {
+              var key = childSnapshot.key;
+              var childData = childSnapshot.val();
+              var how_many = childSnapshot.child("how_many").val();
+              var _time = [];
+              var _quantity = [];
+              var _value = [];
+              var _av = [];
+              _time[0] = 0;
+              _quantity[0] = 0;
+              _value[0] = 0;
+              _av[0] = 0;
+              for (var i = 1; i <= how_many; i++) {
+                  _quantity[i] = childSnapshot.child(i.toString()).child("quantity").val();
+                  _time[i] = childSnapshot.child(i.toString()).child("time_user").val().slice(0, childSnapshot.child(i.toString()).child("time_user").val().search('오'));
+                  _value[i] = Math.round((_value[i - 1] + childSnapshot.child(i.toString()).child("value").val()) * 10) / 10;
+                  _av[i] = Math.round((_value[i] - _value[i - 1]) / _quantity[i] * 10) / 10;
+              }
+              _summ[_summ_cnt++] = _value[how_many];
+              _keys[_keys_cnt++] = key;
+          })
+          //alert(_summ.toString());
+            v=true;
+          document.getElementById('form').style.display="";
+            document.getElementById('svalue').value=_summ.toString();
+        });
+      }
+      else {
+        location.href="lgin.html";
+      }
+    });
+    document.getElementById("logout").onclick=function() {
+      firebase.auth().signOut().then(function() {
+        alert("로그아웃 완료.");
+        location.href="lgin.html";
+      }, function(error) {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        if(gaesu!=0){document.getElementById("alert"+gaesu).remove();}
+        var newContent ='<div class="alert alert-danger" role="alert">'+errorCode.toUpperCase()+': '+errorMessage+'</div>'
+        var newElement = document.createElement("div");
+        newElement.id="alert"+(++gaesu);
+        newElement.innerHTML=newContent;
+        document.getElementById("fig").before(newElement);
+      });
+    }
+    document.getElementById("changepwd").onclick=function() {
+      location.href="changepwd.html";
+    }
+    document.getElementById("findfriend").onclick=function() {
+      location.href="findfriend.html";
+    }
+    document.getElementById("chat").onclick=function() {
+      location.href="chat.html"
+    }
+    document.getElementById("deleteuser").onclick=function() {
+      location.href="deleteuser.html";
+    }
+    document.getElementById("changenme").onclick=function() {
+      location.href="changename.html";
+    }
+    document.getElementById("dbprofile").onclick=function() {
+      location.href="dbprofile.html";
+    }
+  </script>
+</body>

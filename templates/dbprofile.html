@@ -1,0 +1,232 @@
+<head>
+  <link href="static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link rel="shortcut icon" type="image/png" href="/static/favicon.png" />
+  <script src="static/jquery-3.2.0.min.js"></script>
+  <script src="static/Chart.min.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>picoValue - dbprofile</title>
+  <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+  <link href="static/style.css" rel="stylesheet" media="screen">
+  <meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+  <script src="static/jquery.particleground.min.js"></script>
+  <script>
+    var config = {
+      apiKey: "AIzaSyAvztTYyaBoFbbtr0IwbCN1Qi0N_yJ16fY",
+      authDomain: "unied-fd8c7.firebaseapp.com",
+      databaseURL: "https://unied-fd8c7.firebaseio.com",
+      storageBucket: "unied-fd8c7.appspot.com",
+      messagingSenderId: "446008408728"
+    };
+    firebase.initializeApp(config);
+    var database = firebase.database();
+  </script>
+</head>
+<body style="background-color:#000000">
+  <div class="body"></div>
+  <script src="static/js/bootstrap.min.js"></script>
+  <div class="jumbotron">
+    <div class="container" id="cont">
+      <h2 id="pmb">HISTORY</h2>
+      <div id="emptydiv"></div>
+    </div>
+  </div>
+  <script>
+    $('.body').particleground();
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        var newContent = '<p>안녕하세요! <i>' + user.displayName + '</i> 님! <a href="aboutuser.html"><span class="badge">돌아가기</span></a></p>';
+        var newElement = document.createElement("div");
+        newElement.id = "hellouser"
+        newElement.innerHTML = newContent;
+        document.getElementById("pmb").after(newElement);
+        var _summ = [];
+        var _summ_cnt = 0;
+        var _keys = [];
+        var _keys_cnt = 0;
+        database.ref(firebase.auth().currentUser.uid).once('value', function(snapshot) {
+          snapshot.forEach(function(childSnapshot) {
+            var key = childSnapshot.key;
+            var childData = childSnapshot.val();
+            var how_many = childSnapshot.child("how_many").val();
+            var _time = [];
+            var _quantity = [];
+            var _value = [];
+            var _av = [];
+            _time[0] = 0;
+            _quantity[0] = 0;
+            _value[0] = 0;
+            _av[0] = 0;
+            for (var i = 1; i <= how_many; i++) {
+              _quantity[i] = childSnapshot.child(i.toString()).child("quantity").val();
+              _time[i] = childSnapshot.child(i.toString()).child("time_user").val().slice(0,childSnapshot.child(i.toString()).child("time_user").val().search('오'));
+              _value[i] = Math.round((_value[i - 1] + childSnapshot.child(i.toString()).child("value").val())*10)/10;
+              _av[i] = Math.round((_value[i]-_value[i-1]) / _quantity[i] * 10) / 10;
+            }
+            _summ[_summ_cnt++] = _value[how_many];
+            _keys[_keys_cnt++] = key;
+            newContent = '<div style="padding: 10px 0% 10px 0%"><div class="panel panel-default"><div class="panel-heading"><h3 class="panel-title">' + key + '</h3></div><div class="panel-body"><canvas id="' + key + '1"></canvas><canvas id="' + key + '2"></canvas></div></div>'
+            newElement = document.createElement("div");
+            newElement.innerHTML = newContent;
+            document.getElementById("emptydiv").before(newElement);
+            var ctx1 = document.getElementById(key+'1').getContext('2d');
+            var ran1 = Math.floor(Math.random() * 6);
+            var myChart = new Chart(ctx1, {
+              type: 'line',
+              data: {
+                labels: _time,
+                datasets: [{
+                  label: '누적 가중치',
+                  data: _value,
+                  backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                  ][ran1],
+                  borderColor: [
+                    'rgba(255,99,132,1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                  ][ran1],
+                  borderWidth: 1
+                }]
+              },
+              options: {
+              legend: {
+            labels: {
+                fontColor: "white"
+            }
+        },
+            scales: {
+              yAxes: [{
+                ticks: {
+                    fontColor: "white",
+                    beginAtZero: true
+                }
+              }],
+              xAxes: [{
+                  ticks: {
+                      fontColor: "white"
+                  }
+              }]
+            }
+          }
+            });
+            var ctx2 = document.getElementById(key+'2').getContext('2d');
+            var ran2 = Math.floor(Math.random() * 6);
+            var myChart = new Chart(ctx2, {
+              type: 'line',
+              data: {
+                labels: _time,
+                datasets: [{
+                  label: '순간 평균가중치',
+                  data: _av,
+                  backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                  ][ran2],
+                  borderColor: [
+                    'rgba(255,99,132,1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                  ][ran2],
+                  borderWidth: 1
+                }]
+              },
+              options: {
+              legend: {
+            labels: {
+                fontColor: "white"
+            }
+        },
+            scales: {
+              yAxes: [{
+                ticks: {
+                    fontColor: "white",
+                    beginAtZero: true
+                }
+              }],
+              xAxes: [{
+                  ticks: {
+                      fontColor: "white"
+                  }
+              }]
+            }
+          }
+            });
+          });
+          newContent = '<div style="padding: 10px 0% 10px 0%"><div class="panel panel-default"><div class="panel-heading"><h3 class="panel-title">' + 'Summary' + '</h3></div><div class="panel-body"><canvas id="' + 'summary' +
+          '"></canvas></div></div>'
+        newElement = document.createElement("div");
+        newElement.innerHTML = newContent;
+        document.getElementById("hellouser").after(newElement);
+
+
+        var ctx = document.getElementById("summary").getContext('2d');
+        var myChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: _keys,
+            datasets: [{
+              label: '현재 누적 가중치',
+              data: _summ,
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+              ],
+              borderColor: [
+                'rgba(255,99,132,1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+              legend: {
+            labels: {
+                fontColor: "white"
+            }
+        },
+            scales: {
+              yAxes: [{
+                ticks: {
+                    fontColor: "white",
+                    beginAtZero: true
+                }
+              }],
+              xAxes: [{
+                  ticks: {
+                      fontColor: "white"
+                  }
+              }]
+            }
+          }
+        });
+        });
+
+      } else {
+        location.href = "lgin.html"
+      }
+    });
+  </script>
+</body>

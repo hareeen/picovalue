@@ -1,0 +1,140 @@
+<head>
+  <link href="static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link href="static/style.css" rel="stylesheet" media="screen">
+  <link rel="stylesheet" href="static/css/font-awesome.min.css">
+  <link rel="shortcut icon" type="image/png" href="/static/favicon.png"/>
+  <script src="static/jquery-3.2.0.min.js"></script>
+  <script src="static/jquery.particleground.min.js"></script>
+  <meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>picoValue - login</title>
+  <script>
+    var gaesu=0;
+    var is_error_happened=0;
+    var s=true;
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+  <script>
+      var config = {
+          apiKey: "AIzaSyAvztTYyaBoFbbtr0IwbCN1Qi0N_yJ16fY",
+          authDomain: "unied-fd8c7.firebaseapp.com",
+          databaseURL: "https://unied-fd8c7.firebaseio.com",
+          storageBucket: "unied-fd8c7.appspot.com",
+          messagingSenderId: "446008408728"
+      };
+      firebase.initializeApp(config);
+  </script>
+</head>
+<body style="background-color:#000000;height:100%">
+  <script src="static/js/bootstrap.min.js"></script>
+  <div class="body"></div>
+  <div class="jumbotron">
+    <div class="container" id="cont">
+      <!--
+      <div style="clear: both">
+          <p>
+            <h2 style="color:#f535aa;float: left;padding: 10px 0px 0px 0px"><i>pico</i></h2>
+            <h1 style="color:#461b7e">Value</h1>
+          </p>
+      </div>
+      <p>나도 몰랐던 아주 작은 가치까지</p>-->
+      <h2>LOGIN</h2>
+      <div id="howtologin">
+        <div class="input-group input-group-lg" style="padding:10px 0% 0px 0%;width:100%" id="fig">
+            <span class="input-group-addon">
+                <span class="glyphicon glyphicon-envelope" style="color:#ffffff"></span>
+            </span>
+            <input type="text" class="form-control" placeholder="이메일" aria-describedby="sizing-addon3" id="email">
+        </div>
+        <div class="input-group input-group-lg" style="padding:10px 0% 0px 0%;width:100%">
+            <span class="input-group-addon">
+                <span class="glyphicon glyphicon-asterisk" style="color:#ffffff"></span>
+            </span>
+            <input type="password" class="form-control" placeholder="비밀번호" aria-describedby="sizing-addon4" id="password">
+        </div>
+        <div style="padding:10px 0% 0px 0%">
+            <button type="button" class="btn btn-lg btn-block" id="login">
+                로그인
+            </button>
+        </div>
+        <div style="padding:56px 0% 0px 0%">
+            <button type="button" class="btn btn-lg btn-block" style="border-color: #1da1f2;color: #1da1f2" id="twlogin">
+                <i class="fa fa-twitter"></i> 로그인
+            </button>
+        </div>
+        <div style="padding:56px 0% 0px 0%">
+            <button type="button" class="btn btn-lg btn-block" id="signup">
+                회원가입
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    $('.body').particleground();
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        alert("로그인 완료.")
+        location.href="picovalueUI.html";
+      }
+    });
+    document.getElementById("login").onclick=function() {
+      var email=document.getElementById("email").value;
+      var password=document.getElementById("password").value;
+      firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+        // Handle Errors here.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          if(gaesu!=0){document.getElementById("alert"+gaesu).remove();}
+        var newContent ='<div class="alert alert-danger" role="alert">'+errorCode.toUpperCase()+': '+errorMessage+'</div>'
+        var newElement = document.createElement("div");
+        newElement.id="alert"+(++gaesu);
+        newElement.innerHTML=newContent;
+        document.getElementById("fig").before(newElement);
+        
+      });
+    }
+    document.getElementById("twlogin").onclick=function() {
+      var provider = new firebase.auth.TwitterAuthProvider();
+      provider.setCustomParameters({
+        'lang': 'ko'
+      });
+      firebase.auth().signInWithRedirect(provider);
+      firebase.auth().getRedirectResult().then(function(result) {
+          if (result.credential) {
+            // This gives you a the Twitter OAuth 1.0 Access Token and Secret.
+            // You can use these server side with your app's credentials to access the Twitter API.
+            var token = result.credential.accessToken;
+            var secret = result.credential.secret;
+            // ...
+          }
+          // The signed-in user info.
+          var user = result.user;
+      }).catch(function(error) {
+          // Handle Errors here.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          // The email of the user's account used.
+          var email = error.email;
+          // The firebase.auth.AuthCredential type that was used.
+          var credential = error.credential;
+          // ...
+      });
+    }
+    document.getElementById("signup").onclick=function() {
+      location.href="signup.html"
+    }
+    document.getElementById("mpi").onclick=function() {
+        if(s) {
+            document.getElementsByClassName('hand')[0].src="//i.addblock.net/equal_stop.gif";
+            document.getElementById("ma").pause();
+            s=false;
+        }
+        else {
+            document.getElementsByClassName('hand')[0].src = "//i.addblock.net/equal.gif";
+            document.getElementById("ma").play();
+            s=true;
+        }
+    }
+  </script>
+</body>

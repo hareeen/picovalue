@@ -1,0 +1,176 @@
+<head>
+  <link href="static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link rel="shortcut icon" type="image/png" href="/static/favicon.png"/>
+  <script src="static/jquery-3.2.0.min.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="static/style.css" rel="stylesheet" media="screen">
+  <meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+  <script src="static/jquery.particleground.min.js"></script>
+  <title>picoValue - chatting</title>
+  <script>
+    var gaesu=0;
+    var v=false;
+    var mpid, ypid;
+    var mname, pname;
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+  <script>
+      var config = {
+          apiKey: "AIzaSyAvztTYyaBoFbbtr0IwbCN1Qi0N_yJ16fY",
+          authDomain: "unied-fd8c7.firebaseapp.com",
+          databaseURL: "https://unied-fd8c7.firebaseio.com",
+          storageBucket: "unied-fd8c7.appspot.com",
+          messagingSenderId: "446008408728"
+      };
+      firebase.initializeApp(config);
+      var database=firebase.database();
+  </script>
+</head>
+<body style="background-color:#000000">
+  <script src="static/js/bootstrap.min.js"></script>
+  <div class="body"></div>
+  <div class="jumbotron">
+    <div class="container" id="cont">
+      <h2>CHATTING</h2>
+      <div id="pmb" style="height:0;padding:0;margin:0"></div>
+      <div class="input-group" id="ing">
+        <input type="text" class="form-control" id="ypid" placeholder="상대의 picoid를 입력해 주세요">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button" id="start">시작!</button>
+        </span>
+      </div>
+      <div id="chatlist"></div>
+      <div class="input-group" id="ing2">
+        <textarea type="text" class="form-control" id="message" placeholder="메시지..."></textarea>
+        <span class="input-group-btn" style="padding:0;height:100%">
+          <button class="btn btn-default" type="button" id="send" style="height:54px">보내기</button>
+        </span>
+      </div>
+      <ul id="drpdwn_menu" class="list-group" style="padding:10px"></ul>
+    </div>
+  </div>
+  <script>
+    $('.body').particleground();
+    firebase.auth().onAuthStateChanged(function(user) {
+      if(user) {
+        var newContent = '<p>안녕하세요! <i>'+user.displayName+'</i> 님! <a href="picovalueUI.html"><span class="badge">돌아가기</span></a></p>';
+        var newElement = document.createElement("div");
+        newElement.id="hellouser";
+        newElement.innerHTML=newContent;
+        document.getElementById("pmb").before(newElement);
+        database.ref("picoidU/"+user.uid).once('value', function(snapshot) {
+          if(!snapshot.exists()) {
+            location.href="picoid.html";
+          }
+          else {
+            mpid=snapshot.val()
+            var newContent2='<p style="font-size:18px">당신의 picoid는 <mark>'+snapshot.val()+'</mark> 입니다.</p>'
+            var newElement2=document.createElement("div");
+            newElement2.id="usrpid";
+            newElement2.innerHTML=newContent2;
+            document.getElementById("hellouser").after(newElement2);
+            var newContent4='<li style="text-align:center" class="list-group-item"><strong>New messages!</strong></li>';
+            database.ref(mpid).off();
+            database.ref(mpid).on('value', function(snapshot2) {
+              var newContent4='<li style="text-align:center" class="list-group-item"><strong>New messages!</strong></li>';
+              snapshot2.forEach(function(childSnapshot) {
+                var key=childSnapshot.key;
+                var kname;
+                database.ref("picoidN/"+key).once('value', function(snapshot3) {
+                  kname=snapshot3.val();
+                });
+                var mesgs=childSnapshot.val();
+                if(mesgs!=0) {
+                  newContent4+='<li id="'+key+'" class="list-group-item" onclick="document.getElementById('+"'ypid'"+').value='+"'"+key.split('(')[1].slice(0, key.split('(')[1].indexOf(')'))+"'"+'">'+key+': '+mesgs+' messages</a></li>'
+                }
+              });
+              var newElement4=document.createElement("ul");
+              newElement4.id="drpdwn_menu";
+              newElement4.className="list-group";
+              newElement4.innerHTML=newContent4;
+              newElement4.style="padding-top:10px"
+              document.getElementById("drpdwn_menu").remove();
+              document.getElementById("ing2").after(newElement4);
+            });
+          }
+        });
+      }
+      else {
+        location.href="lgin.html";
+      }
+    });
+    document.getElementById("start").onclick=function() {
+      ypid=document.getElementById("ypid").value;
+      database.ref("picoidN/"+mpid).once('value', function(snapshot) {
+        mname=snapshot.val();
+      });
+      database.ref("picoidN/"+ypid).once('value', function(snapshot) {
+        if(!snapshot.exists()) {
+          alert("잘못된 picoid입니다. 입력하신 picoid를 다시 확인해주세요.")
+          return;
+        }
+        else {
+          pname=snapshot.val();
+          if(!confirm("채팅을 원하는 상대의 닉네임이 '"+pname+"' 이(가) 맞나요?")) {
+            return;
+          }
+          database.ref(mpid+"/"+pname+"("+ypid+")").remove();
+          var aid, bid;
+
+          if(mpid>ypid) {
+            aid=mpid;
+            bid=ypid;
+          }
+          else {
+            aid=ypid;
+            bid=mpid;
+          }
+          database.ref(aid+" "+bid).off();
+          database.ref(aid+" "+bid).on('value', function(snapshot3) {
+            document.getElementById("chatlist").remove();
+            var newContent3="";
+            var newElement3=document.createElement("div")
+            newElement3.id="chatlist";
+            snapshot3.forEach(function(childSnapshot) {
+              var nme=childSnapshot.val().split("__splitter__")[0];
+              var mes=childSnapshot.val().split("__splitter__")[1];
+              if(nme==mname) {
+                newContent3=newContent3+"<div class='media'>"
+                +"<div class='media-body'><h4 class='media-heading'>"+nme+"</h4>"+mes+"</div>"
+                +"<div class='media-right media-middle'><a href='#'><img alt='64x64' class='media-object' src='https://api.adorable.io/avatars/285/"+mpid+".png' data-holder-rendered='true' style='width: 64px; height: 64px;'></a></div></div>"
+              }
+              else {
+                newContent3=newContent3+"<div class='media'><div class='media-left media-middle'><a href='#'><img alt='64x64' class='media-object' src='https://api.adorable.io/avatars/285/"+ypid+".png' ata-holder-rendered='true' style='width: 64px; height: 64px;'></a></div>"
+                +"<div class='media-body'><h4 class='media-heading'>"+nme+"</h4>"+mes+"</div></div>"
+              }
+            });
+            newElement3.innerHTML=newContent3;
+            document.getElementById("ing").after(newElement3);
+          });
+        }
+      });
+    }
+    document.getElementById("send").onclick=function() {
+      var aid, bid;
+      if(mpid>ypid) {
+        aid=mpid;
+        bid=ypid;
+      }
+      else {
+        aid=ypid;
+        bid=mpid;
+      }
+      database.ref(ypid+"/"+mname+'('+mpid+')').once('value', function(snapshot) {
+        if(snapshot.exists()) {
+          count=snapshot.val();
+          database.ref(ypid+"/"+mname+'('+mpid+')').set(count+1);
+        }
+        else {
+          database.ref(ypid+"/"+mname+'('+mpid+')').set(1);
+        }
+      });
+      database.ref(aid+" "+bid).push(firebase.auth().currentUser.displayName+"__splitter__"+document.getElementById("message").value);
+      document.getElementById("message").value="";
+    }
+  </script>
+</body>

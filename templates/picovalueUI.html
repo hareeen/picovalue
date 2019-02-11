@@ -1,0 +1,111 @@
+<head>
+  <link href="static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link rel="shortcut icon" type="image/png" href="/static/favicon.png"/>
+  <script src="static/jquery-3.2.0.min.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="static/style.css" rel="stylesheet" media="screen">
+  <meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+  <script src="static/jquery.particleground.min.js"></script>
+  <title>picoValue - value</title>
+  <script>
+    var gaesu=1;
+    var alert_gaesu=0;
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+  <script>
+      var config = {
+          apiKey: "AIzaSyAvztTYyaBoFbbtr0IwbCN1Qi0N_yJ16fY",
+          authDomain: "unied-fd8c7.firebaseapp.com",
+          databaseURL: "https://unied-fd8c7.firebaseio.com",
+          storageBucket: "unied-fd8c7.appspot.com",
+          messagingSenderId: "446008408728"
+      };
+      firebase.initializeApp(config);
+  </script>
+</head>
+<body style="background-color:#000000" id='body'>
+  <script src="static/js/bootstrap.min.js"></script>
+  <div class="body"></div>
+  <div class="jumbotron">
+    <div class="container" id="cont">
+        <h2>SEARCH</h2>
+      <div class="row" id="pmb" style="width:100%;padding:0 0 40px 0;margin:0">
+        <div class="col-xs-6">
+            <button type="button" class="btn btn-lg" id="plus" style="border-right:0"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+        </div>
+        <div class="col-xs-6">
+            <button type="button" class="btn btn-lg" id="minus"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+        </div>
+      </div>
+      <form action="/picovalueUI.html" method="POST">
+        <input class="hidden" id="how_many" name="how_many">
+        <div id="div1">
+          <div class="input-group input-group-lg" style="padding:10px 0% 0px 0%">
+              <span class="input-group-addon" id="sizing-addon2">
+                <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
+              </span>
+              <input type="url" class="form-control" placeholder="웹 주소" aria-describedby="sizing-addon2" id="input1" name="input1">
+          </div>
+        </div>
+        <div style="padding:10px 0% 0px 0%" id="fbut">
+            <button type="submit" class="btn btn-lg btn-block" style="width: 100%" id="picovalue">
+                SEARCH
+            </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    $('.body').particleground();
+    document.getElementById("how_many").value=gaesu;
+    firebase.auth().onAuthStateChanged(function(user) {
+      if(user) {
+        var newContent = '<p>안녕하세요! <i>'+user.displayName+'</i> 님! '+'<a href="aboutuser.html"><span class="badge">계정 설정</span></a></p>';
+        var newElement = document.createElement("div");
+        newElement.id="hellouser"
+        newElement.innerHTML=newContent;
+        document.getElementById("pmb").before(newElement);
+      }
+      else {
+        location.href="lgin.html"
+      }
+    });
+    document.getElementById("plus").onclick=function(){
+    if(gaesu>=9) {
+        if(alert_gaesu!=0){document.getElementById("alert"+alert_gaesu).remove();}
+        var newContentA ='<div style="padding:0 0 10px 0"><div class="alert alert-danger" role="alert">더 이상 추가할 수 없습니다.</div></div>'
+        var newElementA = document.createElement("div");
+        newElementA.id="alert"+(++alert_gaesu);
+        newElementA.innerHTML=newContentA;
+        document.getElementById("pmb").before(newElementA);
+      }
+      else {
+      var newContent = '<div class="input-group input-group-lg" style="padding:10px 0% 0px 0%">' +
+                      '<span class="input-group-addon" id="sizing-addon2">'+
+                      '<span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>'+
+                      '</span>'+
+                      '<input type="url" class="form-control" placeholder="웹 주소" aria-describedby="sizing-addon2" '+
+                      'id="input'+(++gaesu).toString()+'" name="input'+gaesu.toString()+'">'+
+                      '</div>';
+      var newElement = document.createElement("div");
+      newElement.id="div"+(gaesu).toString();
+      newElement.innerHTML=newContent;
+      document.getElementById("fbut").before(newElement);
+      document.getElementById("how_many").value=gaesu;}
+    }
+    document.getElementById("minus").onclick=function(){
+      if(gaesu==1) {
+        if(alert_gaesu!=0){document.getElementById("alert"+alert_gaesu).remove();}
+        var newContent ='<div style="padding:0 0 10px 0"><div class="alert alert-danger" role="alert">더 이상 제거할 수 없습니다.</div></div>';
+        var newElement = document.createElement("div");
+        newElement.id="alert"+(++alert_gaesu);
+        newElement.innerHTML=newContent;
+        document.getElementById("pmb").before(newElement);
+      }
+      else {
+        document.getElementById("div"+(gaesu--).toString()).remove();
+      }
+      document.getElementById("how_many").value=gaesu;
+    }
+  </script>
+</body>

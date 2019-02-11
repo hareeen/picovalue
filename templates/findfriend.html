@@ -1,0 +1,204 @@
+<head>
+  <link href="static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <link rel="shortcut icon" type="image/png" href="/static/favicon.png"/>
+  <script src="static/jquery-3.2.0.min.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link href="static/style.css" rel="stylesheet" media="screen">
+  <meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+  <script src="static/jquery.particleground.min.js"></script>
+  <title>picoValue - findfriend</title>
+  <script>
+    var gaesu=0;
+    var v=false;
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+  <script>
+      var config = {
+          apiKey: "AIzaSyAvztTYyaBoFbbtr0IwbCN1Qi0N_yJ16fY",
+          authDomain: "unied-fd8c7.firebaseapp.com",
+          databaseURL: "https://unied-fd8c7.firebaseio.com",
+          storageBucket: "unied-fd8c7.appspot.com",
+          messagingSenderId: "446008408728"
+      };
+      firebase.initializeApp(config);
+      var database=firebase.database();
+  </script>
+</head>
+<body style="background-color:#000000;margin-bottom:50px">
+  <script src="static/js/bootstrap.min.js"></script>
+  <div class="body"></div>
+  <div class="jumbotron">
+    <div class="container" id="cont">
+      <h2>FRIEND</h2>
+      <div style="padding:0" id="pmb">
+        <button type="button" class="btn btn-lg btn-block" style="width: 100%" id="find_friend">
+          친구 찾기
+        </button>
+      </div>
+      <div style="padding: 69px 0 0 0;display:none" id="adiv">
+        <p style="font-size:15px;text-align:left">
+          사람들을 분석하고 있습니다...
+        </p>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" style="width: 0%;" id="anprogress">
+          </div>
+        </div>
+      </div>
+      <div style="padding: 25px 0 0 0;display:none" id="cdiv">
+        <p style="font-size:15px;text-align:left">
+          나에게 꼭 맞는 사람을 찾고 있습니다...
+        </p>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" style="width: 0%;" id="cpprogress">
+          </div>
+        </div>
+      </div>
+      <div style="padding: 25px 0 0 0;display:none;" id="fdiv">
+        <div style="border:1px solid white;">
+          <div style="width:auto" width="auto">
+            <p style="font-size:15px;/*text-align:left;*/padding:10px 0 5px 0">당신에게 꼭 맞는 사람의...</p>
+            <p style="font-size:15px;/*text-align:left;*/padding:5px 0 5px 0">이름은 <strong id="str"></strong> 이고,</p>
+            <p style="font-size:15px;/*text-align:left;*/padding:5px 0 10px 0">picoid는 <mark id="mrk"></mark> 입니다!</p>
+          <div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+
+    $('.body').particleground();
+    function getUsersumData(_uid) {
+      return new Promise((resolve, reject) => {
+        var _summ = new Array();
+        var _summ_cnt = 0;
+        var _keys = [];
+        var _keys_cnt = 0;
+        database.ref(_uid).once('value', function(snapshot) {
+          snapshot.forEach(function(childSnapshot) {
+            var key = childSnapshot.key;
+            var childData = childSnapshot.val();
+            var how_many = childSnapshot.child("how_many").val();
+            var _time = [];
+            var _quantity = [];
+            var _value = [];
+            var _av = [];
+            _time[0] = 0;
+            _quantity[0] = 0;
+            _value[0] = 0;
+            _av[0] = 0;
+            for (var i = 1; i <= how_many; i++) {
+                _quantity[i] = childSnapshot.child(i.toString()).child("quantity").val();
+                _time[i] = childSnapshot.child(i.toString()).child("time_user").val().slice(0, childSnapshot.child(i.toString()).child("time_user").val().search('오'));
+                _value[i] = Math.round((_value[i - 1] + childSnapshot.child(i.toString()).child("value").val()) * 10) / 10;
+                _av[i] = Math.round((_value[i] - _value[i - 1]) / _quantity[i] * 10) / 10;
+            }
+            _summ[_summ_cnt++] = _value[how_many];
+            _keys[_keys_cnt++] = key;
+            if(_summ.length===6) {
+              resolve(_summ);
+            }
+          })
+        });
+      })
+    }
+    function exratio(s) {
+      var tha=0;
+      for(var i=0;i<s.length;i++) {
+        tha+=s[i];
+      }
+      var d=[];
+      for(var i=0;i<s.length;i++) {
+        if(tha===0) d[i]=0;
+        else d[i]=s[i]/tha;
+      }
+      return d;
+    }
+    function g_isim(a,b) {
+      var isim=0;
+      for(var i=0; i<a.length;i++) {
+        if(a[i]>b[i]) {
+          isim += (a[i]-b[i]);
+        }
+        else {
+          isim += (b[i]-a[i]);
+        }
+      }
+      return isim;
+    }
+    firebase.auth().onAuthStateChanged(function(user) {
+      if(user) {
+        var newContent = '<p>안녕하세요! <i>'+user.displayName+'</i> 님! <a href="picovalueUI.html"><span class="badge">돌아가기</span></a></p>';
+        var newElement = document.createElement("div");
+        newElement.id="hellouser";
+        newElement.innerHTML=newContent;
+        document.getElementById("pmb").before(newElement);
+        //getUsersumData(user.uid).then(function(res){alert(res.toString())});
+      }
+      else {
+        location.href="lgin.html";
+      }
+    });
+    document.getElementById('find_friend').onclick=function() {
+      var msum;
+      var osum=[];
+      var idxn=[];
+      document.getElementById('adiv').style.display="";
+      var pr=new Promise((resolve, reject) => {
+        var osu=[];
+        var idx=[];
+        var msu;
+        database.ref('picoidU').once('value', function(snapshot) {
+          var n=snapshot.numChildren();
+          //alert(n)
+          var c=0;
+          snapshot.forEach(function(childSnapshot) {
+            var key=childSnapshot.key;
+            getUsersumData(key).then(function(res){
+              //alert(res.toString());
+              var _su=exratio(res);
+              //alert(_su.toString());
+              if(key===firebase.auth().currentUser.uid) msu=_su;
+              else {
+                idx[idx.length]=key;
+                osu[osu.length]=_su;
+              }
+              document.getElementById('anprogress').style.width=((++c)/n*100).toString()+"%";
+              if(c==n) {
+                resolve([msu,osu,idx]);
+              }
+            });
+
+          });
+        });
+      });
+      var guid;
+      pr.then(function(res){
+        document.getElementById('cdiv').style.display="";
+        msum=res[0];
+        osum=res[1];
+        idxn=res[2];
+        isim_l=[];
+        var min=2;
+        var min_p=0;
+        for(var i=0;i<osum.length;i++) {
+          isim_l[i]=g_isim(msum, osum[i]);
+          if(min>isim_l[i]) {
+            min=isim_l[i];
+            min_p=i;
+          }
+          document.getElementById('cpprogress').style.width=((i+1)/osum.length*100).toString()+"%";
+        }
+        guid=idxn[min_p];
+        database.ref('picoidU/'+guid).once('value', function(snapshot) {
+          var pid=snapshot.val();
+          database.ref('picoidN/'+pid).once('value', function(snapshot2) {
+            var name=snapshot2.val();
+            document.getElementById('str').innerHTML=name;
+            document.getElementById('mrk').innerHTML=pid;
+            document.getElementById('fdiv').style.display="";
+          });
+        });
+      });
+    }
+  </script>
+</body>
